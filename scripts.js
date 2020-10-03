@@ -1,8 +1,9 @@
+const scriptProperties = PropertiesService.getScriptProperties()
 const getTwitterService = function () {
-    const consumerKey = PropertiesService.getScriptProperties().getProperty("TWITTER_CONSUMER_KEY");
-    const consumerSecret = PropertiesService.getScriptProperties().getProperty("TWITTER_CONSUMER_SECRET");
-    const accessToken = PropertiesService.getScriptProperties().getProperty("TWITTER_ACCESS_TOKEN");
-    const accessTokenSecret = PropertiesService.getScriptProperties().getProperty("TWITTER_ACCESS_TOKEN_SECRET");
+    const consumerKey = scriptProperties.getProperty("TWITTER_CONSUMER_KEY");
+    const consumerSecret = scriptProperties.getProperty("TWITTER_CONSUMER_SECRET");
+    const accessToken = scriptProperties.getProperty("TWITTER_ACCESS_TOKEN");
+    const accessTokenSecret = scriptProperties.getProperty("TWITTER_ACCESS_TOKEN_SECRET");
     return OAuth1.createService("Twitter")
         .setAccessTokenUrl("https://api.twitter.com/oauth/access_token")
         .setRequestTokenUrl("https://api.twitter.com/oauth/request_token")
@@ -14,7 +15,6 @@ const getTwitterService = function () {
 
 const myFunction = function () {
     const service = getTwitterService();
-
     // 1. accessToken発行者Twitterアカウントのタイムラインより直近のツイートをしたTwitterアカウントを抽出
     const homeTimeline = service.fetch("https://api.twitter.com/1.1/statuses/home_timeline.json", {method: "GET"});
     const homeTimelineJson = JSON.parse(homeTimeline.getContentText());
@@ -48,7 +48,6 @@ const myFunction = function () {
         "program",
         "vim",
         "emacs",
-        "it",
         "エンジニア",
         "engineer",
         "component",
@@ -81,14 +80,11 @@ const myFunction = function () {
         "アプリケーション",
         "system",
         "システム",
-        "vr",
-        "ar",
         "unity",
         "sier",
         "ergodox",
         "自作キーボード",
         "フリーランス",
-        "se",
         "html",
         "css",
         "atcoder",
@@ -97,13 +93,13 @@ const myFunction = function () {
         "ネットワーク",
         "サーバー",
         "perl",
-        "go",
+        "golang",
         "sql",
         "tdd",
         "テスト",
         "test"
     ];
-    const myName = PropertiesService.getScriptProperties().getProperty("TWITTER_MY_NAME");
+    const myName = scriptProperties.getProperty("TWITTER_CONSUMER_NAME")
     const followersForMyTopic = followersListJson.filter(function (user) {
         Logger.log(user.description);
         return user.description.match(new RegExp("(" + keywords.join("|") + ")", "ig")) !== null　&& user.screen_name != myName
@@ -133,5 +129,7 @@ const myFunction = function () {
         }
         Logger.log("friendships/create.json :" + screenName + ", index:" + index);
         service.fetch("https://api.twitter.com/1.1/friendships/create.json?screen_name=" + screenName + "&follow=false", {method: "POST"});
+        // 5. フォローしたTwitterアカウントと日時をSpreadsheetに登録
+        setSpreadSheet(screenName);
     });
 };
